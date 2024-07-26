@@ -84,4 +84,15 @@ public class GlobalExceptionHandler {
                         .build()
         );
     }
+
+
+    @ExceptionHandler(OperationNotPermittedException.class)
+    public ResponseEntity<ExceptionResponse> handleException(OperationNotPermittedException operationNotPermittedException){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ExceptionResponse.builder()
+                        .error(operationNotPermittedException.getMessage())
+                        .build()
+        );
+    }
+
 }

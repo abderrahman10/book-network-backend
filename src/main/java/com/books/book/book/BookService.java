@@ -1,6 +1,7 @@
 package com.books.book.book;
 
 import com.books.book.common.PageResponse;
+import com.books.book.file.FileStorageService;
 import com.books.book.handler.OperationNotPermittedException;
 import com.books.book.history.BookTransactionHistory;
 import com.books.book.history.BookTransactionHistoryRepository;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +26,7 @@ public class BookService {
     private  final  BookMapper bookMapper;
     private  final  BookRepository bookRepository;
     private  final BookTransactionHistoryRepository bookTransactionHistoryRepository;
+    private  final FileStorageService fileStorageService;
     public Integer save(BookRequest bookRequest, Authentication connectedUser) {
 
      //Cette conversion fonctionne uniquement si l'objet renvoyé par getPrincipal()est effectivement une instance de User.
@@ -180,5 +183,13 @@ public class BookService {
                 .orElseThrow(()-> new OperationNotPermittedException("this nook is not returned yet . you cannot approve its return"));
         bookTransactionHistory.setReturnApproved(true);
         return  bookTransactionHistoryRepository.save(bookTransactionHistory).getId();
+    }
+
+    public void uploadBookCoverPicture(MultipartFile file, Authentication connectedUser, Integer bookId) {
+        Book book=bookRepository.findById(bookId) .orElseThrow(()-> new EntityNotFoundException("No book found with the Id :" + bookId));
+        User userconnected=(User) connectedUser.getPrincipal();
+        var bookCover = fileStorageService.saveFile(file,userconnected.getId());
+        book.setBookCover(bookCover);
+        bookRepository.save(book);
     }
 }

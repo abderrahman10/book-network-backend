@@ -1,12 +1,14 @@
 package com.books.book.book;
 
 import com.books.book.common.PageResponse;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -85,6 +87,12 @@ public class BookController {
     @PatchMapping("/borrow/return/approve/{book-id}")
     public ResponseEntity<Integer> returnApproveBorrowBook(@PathVariable("book-id") Integer bookId, Authentication connectedUser){
         return  ResponseEntity.ok(bookService.returnApproveBorrowBook(bookId,connectedUser));
+
+    }
+    @PatchMapping(value = "/cover/{book-id}",consumes = "multipart/form-data")
+    public ResponseEntity<?> uploadBookCoverPicture(@PathVariable("book-id") Integer bookId, @Parameter() @RequestPart("file") MultipartFile file, Authentication connectedUser){
+       bookService.uploadBookCoverPicture(file,connectedUser,bookId);
+        return  ResponseEntity.accepted().build();
 
     }
 }

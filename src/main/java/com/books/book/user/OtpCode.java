@@ -2,7 +2,6 @@ package com.books.book.user;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 
-public class Token {
+public class OtpCode {
    @Id
    @GeneratedValue
     private  Integer Id;

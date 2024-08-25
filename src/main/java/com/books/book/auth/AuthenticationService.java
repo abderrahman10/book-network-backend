@@ -4,13 +4,11 @@ import com.books.book.email.EmailService;
 import com.books.book.email.EmailTemplateName;
 import com.books.book.roles.RoleRepository;
 import com.books.book.security.JwtService;
-import com.books.book.user.Token;
-import com.books.book.user.TokenRepository;
+import com.books.book.user.OtpCode;
+import com.books.book.user.OtpCodeRepository;
 import com.books.book.user.User;
 import com.books.book.user.UserRepository;
 import jakarta.mail.MessagingException;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,7 +21,6 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +32,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
     private final EmailService emailService;
-    private final TokenRepository tokenRepository;
+    private final OtpCodeRepository tokenRepository;
 
     @Value("${application.mailing.frontend.activation-url}")
     private String activationUrl;
@@ -67,8 +64,9 @@ public class AuthenticationService {
 
         var claims = new HashMap<String, Object>();
         var user = ((User) auth.getPrincipal());
-        claims.put("fullName", user.getFullName());
 
+        claims.put("fullName", user.getFullName());
+        
         var jwtToken = jwtService.generateToken(claims, (User) auth.getPrincipal());
         return AuthenticationResponse.builder()
                 .token(jwtToken)
@@ -76,40 +74,40 @@ public class AuthenticationService {
     }
 
     //@Transactional
-    public void activateAccount(String token) throws MessagingException {
-        Token savedToken = tokenRepository.findByToken(token)
+    public void activateAccount(String otpCode) throws MessagingException {
+        OtpCode savedOtpCode = tokenRepository.findByToken(otpCode)
                 // todo exception has to be defined
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
-        if (LocalDateTime.now().isAfter(savedToken.getExpiredAt())) {
-            sendValidationEmail(savedToken.getUser());
+        if (LocalDateTime.now().isAfter(savedOtpCode.getExpiredAt())) {
+            sendValidationEmail(savedOtpCode.getUser());
             throw new RuntimeException("Activation token has expired. A new token has been send to the same email address");
         }
 
-        var user = userRepository.findById(savedToken.getUser().getId())
+        var user = userRepository.findById(savedOtpCode.getUser().getId())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         user.setEnabled(true);
         userRepository.save(user);
 
-        savedToken.setValidatedAt(LocalDateTime.now());
-        tokenRepository.save(savedToken);
+        savedOtpCode.setValidatedAt(LocalDateTime.now());
+        tokenRepository.save(savedOtpCode);
     }
 
-    private String generateAndSaveActivationToken(User user) {
+    private String generateAndSaveActivationotpCode(User user) {
         // Generate a token
-        String generatedToken = generateActivationCode(6);
-        var token = Token.builder()
-                .token(generatedToken)
+        String generatedOtpCode = generateActivationOtpCode(6);
+        var Otp = OtpCode.builder()
+                .token(generatedOtpCode)
                 .createdAt(LocalDateTime.now())
                 .expiredAt(LocalDateTime.now().plusMinutes(15))
                 .user(user)
                 .build();
-        tokenRepository.save(token);
+        tokenRepository.save(Otp);
 
-        return generatedToken;
+        return generatedOtpCode;
     }
 
     private void sendValidationEmail(User user) throws MessagingException {
-        var newToken = generateAndSaveActivationToken(user);
+        var newToken = generateAndSaveActivationotpCode(user);
 
         emailService.sendEmail(
                 user.getEmail(),
@@ -121,7 +119,7 @@ public class AuthenticationService {
         );
     }
 
-    private String generateActivationCode(int length) {
+    private String generateActivationOtpCode(int length) {
         String characters = "0123456789";
         StringBuilder codeBuilder = new StringBuilder();
 

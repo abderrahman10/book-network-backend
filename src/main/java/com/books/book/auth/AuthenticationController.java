@@ -1,7 +1,6 @@
 package com.books.book.auth;
 
-import com.books.book.user.Token;
-import com.books.book.user.TokenRepository;
+import com.books.book.user.OtpCodeRepository;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
@@ -10,8 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
 @RestController
 @RequestMapping("auth")
 @RequiredArgsConstructor
@@ -19,7 +16,7 @@ import java.util.Optional;
 public class AuthenticationController {
 
 private  final  AuthenticationService authenticationService;
-private  final TokenRepository tokenRepository;
+private  final OtpCodeRepository tokenRepository;
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<?> register( @RequestBody @Valid RegistrationRequest request  ) throws MessagingException {
@@ -29,14 +26,14 @@ private  final TokenRepository tokenRepository;
 
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(
-            @RequestBody AuthenticationRequest request
+            @RequestBody @Valid AuthenticationRequest request
     ) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 
-    @GetMapping("/activate-account/{token}")
-    public void confirm(@PathVariable String token ) throws MessagingException {
-        authenticationService.activateAccount(token);
+    @GetMapping("/activate-account/{otpCode}")
+    public void confirm(@PathVariable String otpCode ) throws MessagingException {
+        authenticationService.activateAccount(otpCode);
     }
 
 

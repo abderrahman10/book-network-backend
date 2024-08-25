@@ -170,14 +170,14 @@ public class BookService {
        return  bookTransactionHistoryRepository.save(bookTransactionHistory).getId();
     }
 
-    public Integer returnApproveBorrowBook(Integer bookId, Authentication connectedUser) {
+    public Integer approveReturnedBorrowBook(Integer bookId, Authentication connectedUser) {
         Book book=bookRepository.findById(bookId) .orElseThrow(()-> new EntityNotFoundException("No book found with the Id :" + bookId));
         if(book.isArchived() || !book.isShareable()){
             throw new OperationNotPermittedException("the requested book cannot be borrowed");
         }
         User userconnected=(User) connectedUser.getPrincipal();
-        if(Objects.equals(book.getOwner().getId(),userconnected.getId())){
-            throw  new OperationNotPermittedException("you can not  returned your own book");
+        if(!Objects.equals(book.getOwner().getId(),userconnected.getId())){
+            throw  new OperationNotPermittedException("you can not  returned a book that you do not own");
         }
         BookTransactionHistory bookTransactionHistory=bookTransactionHistoryRepository.findByBookIdAndOwnerId(bookId,userconnected.getId())
                 .orElseThrow(()-> new OperationNotPermittedException("this nook is not returned yet . you cannot approve its return"));
@@ -191,5 +191,15 @@ public class BookService {
         var bookCover = fileStorageService.saveFile(file,userconnected.getId());
         book.setBookCover(bookCover);
         bookRepository.save(book);
+    }
+
+    public Integer deleteBook(Integer bookId, Authentication connectedUser) {
+        Book book=bookRepository.findById(bookId) .orElseThrow(()-> new EntityNotFoundException("No book found with the Id :" + bookId));
+        User userconnected=(User) connectedUser.getPrincipal();
+        if(!Objects.equals(book.getOwner().getId(),userconnected.getId())){
+            throw  new OperationNotPermittedException("you can not delete this book ");
+        }
+        bookRepository.delete(book);
+        return  book.getId();
     }
 }

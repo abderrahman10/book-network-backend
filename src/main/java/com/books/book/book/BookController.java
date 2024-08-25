@@ -29,8 +29,8 @@ public class BookController {
     public  ResponseEntity<BookResponse> findBookById(@PathVariable("book-id") Integer bookId){
         return  ResponseEntity.ok(bookService.findBookById(bookId));
     }
-
-    @GetMapping
+//all books except the connected user
+    @GetMapping("find-all-books")
     public ResponseEntity<PageResponse<BookResponse>>findAllBooks(
             @RequestParam(name = "page",defaultValue = "0",required = false) int page,
             @RequestParam(name = "size",defaultValue = "10",required = false) int size,
@@ -71,6 +71,12 @@ public class BookController {
     @PatchMapping("/archived/{book-id}")
     public ResponseEntity<Integer> updateArchivedStatus(@PathVariable("book-id") Integer bookId, Authentication connectedUser){
         return  ResponseEntity.ok(bookService.updateArchivedStatus(bookId,connectedUser));
+
+    }
+
+    @DeleteMapping("/delete/{book-id}")
+    public ResponseEntity<Integer> DeleteBook(@PathVariable("book-id") Integer bookId, Authentication connectedUser){
+        return  ResponseEntity.ok(bookService.deleteBook(bookId,connectedUser));
 
     }
 

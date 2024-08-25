@@ -4,8 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface TokenRepository extends JpaRepository<Token,Integer> {
+public interface OtpCodeRepository extends JpaRepository<OtpCode,Integer> {
 
-    Optional<Token> findByToken(String token);
+    Optional<OtpCode> findByToken(String token);
 
 }

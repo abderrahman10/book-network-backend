@@ -20,9 +20,9 @@ public class BookController {
     private  final  BookService bookService;
 
     @PostMapping
-    public ResponseEntity<Integer> saveBook(@Valid @RequestBody BookRequest bookRequest, Authentication connectedUser){
+    public ResponseEntity<Integer> saveBook(@Valid @RequestBody BookRequest bookRequest){
 
-      return ResponseEntity.ok(bookService.save(bookRequest,connectedUser));
+      return ResponseEntity.ok(bookService.save(bookRequest));
     }
 
     @GetMapping("{book-id}")
@@ -87,12 +87,12 @@ public class BookController {
     }
     @PatchMapping("/borrow/return/{book-id}")
     public ResponseEntity<Integer> returnBorrowBook(@PathVariable("book-id") Integer bookId, Authentication connectedUser){
-        return  ResponseEntity.ok(bookService.returnBorrowBook(bookId,connectedUser));
+        return  ResponseEntity.ok(bookService.returnBorrowedBook(bookId,connectedUser));
 
     }
     @PatchMapping("/borrow/return/approve/{book-id}")
     public ResponseEntity<Integer> returnApproveBorrowBook(@PathVariable("book-id") Integer bookId, Authentication connectedUser){
-        return  ResponseEntity.ok(bookService.returnApproveBorrowBook(bookId,connectedUser));
+        return  ResponseEntity.ok(bookService.approveReturnBorrowedBook(bookId,connectedUser));
 
     }
     @PatchMapping(value = "/cover/{book-id}",consumes = "multipart/form-data")
